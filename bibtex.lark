@@ -1,0 +1,7 @@
+// bibtex.lark
+parser grammar bibtex;
+parser="lalr";
+
+start: entry+ // One or more entries needed
+
+entry: "@"
