@@ -8,50 +8,43 @@
 
 start: entry* // 0 or more BibTeX entries 
 
-entry: article // Define all 13 different entry types
-     | book
-     | booklet
-     | inbook
-     | incollection
-     | inproceedings
-     | manual
-     | masterthesis
-     | misc
-     | phdthesis
-     | proceedings
-     | techreport
-     | unpublished
-     
+entry: "@" entry_type "{" IDENTIFIER "," fields "}" // Define all 13 standard entry types w/ grammar rules (in BibTeX citation format)
 
-field: key "=" value "," // key - value pair, key is a field type (author, title, year, etc.)
+entry_type: "article"
+          | "book"
+          | "booklet"    
+          | "inbook"
+          | "incollection"
+          | "inproceedings"
+          | "manual"
+          | "masterthesis"
+          | "misc"
+          | "phdthesis"
+          | "proceedings"
+          | "techreport"
+          | "unpublished"
 
-key: IDENTIFIER
+fields: field ("," field)* ","? // List of fields seperated by commas (optional for the last field)
 
-value: INTEGER // Different data types the parser can read
+field: FIELD_NAME "=" value  // key - value pair, key in this case is the field type (author, title, year, etc.)
+
+value: "{" inner_braced_content "}" // Different data types the parser can read for the value
      | ESCAPED_STRING
-     | braced_string 
-     | IDENTIFIER	
+     | NUMBER
+     | FIELD_NAME 	
 
-article: "@" "article" "{" IDENTIFIER "," field+ "}" // Creating grammar rules for the 13 standard entry types (in BibTeX citation format)
-book: "@" "book" "{" IDENTIFIER "," field+ "}"
-booklet: "@" "booklet" "{" IDENTIFIER "," field+ "}"
-inbook: "@" "inbook" "{" IDENTIFIER "," field+ "}"
-incollection: "@" "incollection" "{" IDENTIFIER "," field+ "}"
-inproceedings: "@" "inproceedings" "{" IDENTIFIER "," field+ "}"
-manual: "@" "manual" "{" IDENTIFIER "," field+ "}"
-masterthesis: "@" "masterthesis" "{" IDENTIFIER "," field+ "}"
-misc: "@" "misc" "{" IDENTIFIER "," field+ "}"
-phdthesis: "@" "phdthesis" "{" IDENTIFIER "," field+ "}"
-proceedings: "@" "proceedings" "{" IDENTIFIER "," field+ "}"
-techreport: "@" "techreport" "{" IDENTIFIER "," field+ "}"
-unpublished: "@" "unpublished" "{" IDENTIFIER "," field+ "}"
+inner_braced_content: (braced_block | INNER_TEXT)* // Nested braces or anything else
+braced_block: "{" inner_braced_content "}" // Used to handle nested braces using recursion
 
-braced_string: "{" braced_content* "}" 
-braced_content: braced_string | /[^{}]+/ // Either nested curly braces or text itself 
+// Terminals - ordered in priority
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_:\-]*/  // Able to allow citekeys, even with hyphens, colons, and underscores
+FIELD_NAME: /[a-zA-Z_][a-zA-Z0-9_]*/      // Able to allow field names (with out hyphens, colons, etc.)
+INNER_TEXT: /[^{}]+/ // Able to text inside braces (that are not more braces)
+NUMBER: /[0-9]+/
 
-// Importing standard integer rules, common names, dealing w/ content in quotes, recognizing whitespace and ignoring it  
-%import common.INT -> INTEGER
-%import common.CNAME -> IDENTIFIER
-%import common.ESCAPED_STRING
+
+%import common.ESCAPED_STRING // For quoted strings
+
+// Recognizing whitespace and ignoring it  
 %import common.WS
 %ignore WS
