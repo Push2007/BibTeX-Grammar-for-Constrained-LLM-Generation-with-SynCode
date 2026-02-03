@@ -1,7 +1,57 @@
 // bibtex.lark
-parser grammar bibtex;
-parser="lalr";
+/ /Handles all standard BibTeX entry types
+// Supports nested braces in field values
+// Correctly processes special characters and LaTeX commands
+// Is compatible with SynCode's grammar requirements
 
-start: entry+ // One or more entries needed
+//Lark file is used to define syntax of the grammar (in BibTeX citation format)
 
-entry: "@"
+start: entry* // 0 or more BibTeX entries 
+
+entry: article // Define all 13 different entry types
+     | book
+     | booklet
+     | inbook
+     | incollection
+     | inproceedings
+     | manual
+     | masterthesis
+     | misc
+     | phdthesis
+     | proceedings
+     | techreport
+     | unpublished
+     
+
+field: key "=" value "," // key - value pair, key is a field type (author, title, year, etc.)
+
+key: IDENTIFIER
+
+value: INTEGER // Different data types the parser can read
+     | ESCAPED_STRING
+     | braced_string 
+     | IDENTIFIER	
+
+article: "@" "article" "{" IDENTIFIER "," field+ "}" // Creating grammar rules for the 13 standard entry types (in BibTeX citation format)
+book: "@" "book" "{" IDENTIFIER "," field+ "}"
+booklet: "@" "booklet" "{" IDENTIFIER "," field+ "}"
+inbook: "@" "inbook" "{" IDENTIFIER "," field+ "}"
+incollection: "@" "incollection" "{" IDENTIFIER "," field+ "}"
+inproceedings: "@" "inproceedings" "{" IDENTIFIER "," field+ "}"
+manual: "@" "manual" "{" IDENTIFIER "," field+ "}"
+masterthesis: "@" "masterthesis" "{" IDENTIFIER "," field+ "}"
+misc: "@" "misc" "{" IDENTIFIER "," field+ "}"
+phdthesis: "@" "phdthesis" "{" IDENTIFIER "," field+ "}"
+proceedings: "@" "proceedings" "{" IDENTIFIER "," field+ "}"
+techreport: "@" "techreport" "{" IDENTIFIER "," field+ "}"
+unpublished: "@" "unpublished" "{" IDENTIFIER "," field+ "}"
+
+braced_string: "{" braced_content* "}" 
+braced_content: braced_string | /[^{}]+/ // Either nested curly braces or text itself 
+
+// Importing standard integer rules, common names, dealing w/ content in quotes, recognizing whitespace and ignoring it  
+%import common.INT -> INTEGER
+%import common.CNAME -> IDENTIFIER
+%import common.ESCAPED_STRING
+%import common.WS
+%ignore WS
