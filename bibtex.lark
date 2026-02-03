@@ -1,5 +1,5 @@
 // bibtex.lark
-/ /Handles all standard BibTeX entry types
+// Handles all standard BibTeX entry types
 // Supports nested braces in field values
 // Correctly processes special characters and LaTeX commands
 // Is compatible with SynCode's grammar requirements
