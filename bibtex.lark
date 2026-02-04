@@ -6,13 +6,13 @@
 
 //Lark file is used to define syntax of the grammar (in BibTeX citation format)
 
-start: entry* // 0 or more BibTeX entries 
+start: entry+ // 1 or more BibTeX entries
 
 entry: "@" entry_type "{" IDENTIFIER "," fields "}" // Define all 13 standard entry types w/ grammar rules (in BibTeX citation format)
 
 entry_type: "article"
           | "book"
-          | "booklet"    
+          | "booklet"
           | "inbook"
           | "incollection"
           | "inproceedings"
@@ -29,9 +29,9 @@ fields: field ("," field)* ","? // List of fields seperated by commas (optional 
 field: FIELD_NAME "=" value  // key - value pair, key in this case is the field type (author, title, year, etc.)
 
 value: "{" inner_braced_content "}" // Different data types the parser can read for the value
-     | ESCAPED_STRING
+     | QUOTED_STRING
      | NUMBER
-     | FIELD_NAME 	
+     | FIELD_NAME
 
 inner_braced_content: (braced_block | INNER_TEXT)* // Nested braces or anything else
 braced_block: "{" inner_braced_content "}" // Used to handle nested braces using recursion
@@ -39,12 +39,12 @@ braced_block: "{" inner_braced_content "}" // Used to handle nested braces using
 // Terminals - ordered in priority
 IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_:\-]*/  // Able to allow citekeys, even with hyphens, colons, and underscores
 FIELD_NAME: /[a-zA-Z_][a-zA-Z0-9_]*/      // Able to allow field names (with out hyphens, colons, etc.)
-INNER_TEXT: /[^{}]+/ // Able to text inside braces (that are not more braces)
+INNER_TEXT: /[^\{\}]+/ // Able to text inside braces (that are not more braces)
 NUMBER: /[0-9]+/
+QUOTED_STRING: /"[^"]*"/
 
 
-%import common.ESCAPED_STRING // For quoted strings
 
-// Recognizing whitespace and ignoring it  
-%import common.WS
+// Recognizing whitespace and ignoring it
+WS: /[ \t\n\r]+/
 %ignore WS
