@@ -1,50 +1,33 @@
-// bibtex.lark
-// Handles all standard BibTeX entry types
-// Supports nested braces in field values
-// Correctly processes special characters and LaTeX commands
-// Is compatible with SynCode's grammar requirements
+start: entry // Need entry+ for test.py
 
-//Lark file is used to define syntax of the grammar (in BibTeX citation format)
+entry: ENTRY_TYPE LBRACE WORD COMMA fields RBRACE // Overall BibTeX Format
 
-start: entry+ // 1 or more BibTeX entries
+fields: field+
 
-entry: "@" entry_type "{" IDENTIFIER "," fields "}" // Define all 13 standard entry types w/ grammar rules (in BibTeX citation format)
+field: FIELD_NAME EQ value COMMA?
 
-entry_type: "article"
-          | "book"
-          | "booklet"
-          | "inbook"
-          | "incollection"
-          | "inproceedings"
-          | "manual"
-          | "masterthesis"
-          | "misc"
-          | "phdthesis"
-          | "proceedings"
-          | "techreport"
-          | "unpublished"
+value: braced_value
+ | QUOTED // Accounts for quoatation marks instead of braces
+ | words
 
-fields: field ("," field)* ","? // List of fields seperated by commas (optional for the last field)
+words: WORD+
 
-field: FIELD_NAME "=" value  // key - value pair, key in this case is the field type (author, title, year, etc.)
+LBRACE: "{"
+RBRACE: "}"
+COMMA.1: ","
+EQ: "="
 
-value: "{" inner_braced_content "}" // Different data types the parser can read for the value
-     | QUOTED_STRING
-     | NUMBER
-     | FIELD_NAME
+ENTRY_TYPE.5: /(@article|@book|@misc|@booklet|@inbook|@incollection|@inproceedings|@manual|@masterthesis|@phdthesis|@proceedings|@techreport|@unpublished)/i
 
-inner_braced_content: (braced_block | INNER_TEXT)* // Nested braces or anything else
-braced_block: "{" inner_braced_content "}" // Used to handle nested braces using recursion
+FIELD_NAME.7: /(address|annote|author|booktitle|chapter|copyright|edition|editor|howpublished|institution|journal|keywords|month|note|number|organization|pages|publisher|school|series|title|type|volume|year|doi|issn|isbn|url)/i
 
-// Terminals - ordered in priority
-IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_:\-]*/  // Able to allow citekeys, even with hyphens, colons, and underscores
-FIELD_NAME: /[a-zA-Z_][a-zA-Z0-9_]*/      // Able to allow field names (with out hyphens, colons, etc.)
-INNER_TEXT: /[^\{\}]+/ // Able to text inside braces (that are not more braces)
-NUMBER: /[0-9]+/
-QUOTED_STRING: /"[^"]*"/
+QUOTED.7: /"[^"]*"/   // match entire "..." as one token
 
+braced_value.1: LBRACE braced_content RBRACE
 
+braced_content.1: (WORD | FIELD_NAME | EQ | QUOTED | COMMA | braced_value)*   // recursive, allowing nested braces
 
-// Recognizing whitespace and ignoring it
+WORD.1: /[A-Za-z0-9_\-#\$%&*+\/;.!?~^:áéíóúñ()]+|\\[^\s]/ // Able to accept variety of characters (but NOT the comma)
+
 WS: /[ \t\n\r]+/
 %ignore WS
