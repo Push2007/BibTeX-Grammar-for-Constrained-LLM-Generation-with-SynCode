@@ -2,7 +2,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.10-blue)
 ## Assignment Overview
 This project demonstrates the use of SynCode to generate BibTeX citations using a constrained grammar. 
-The goal is to produce valid BibTeX entries in response to natural language prompts.
+The goal is to **strictly** produce valid BibTeX entries in response to natural language prompts.
 ## Deliverables
 1. bibtex.lark
    - Grammar file that models the syntax of a BibTeX citation
